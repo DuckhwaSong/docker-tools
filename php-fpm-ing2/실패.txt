@@ -1,0 +1,3 @@
+* mysql이 아닌 mariadb 기본 패키징으로 실패!
+* 아파치,php-fpm,mysql(mariadb) 서비스 등록이 안되는 문제
+ => 우분투 16.04로 프로젝트 변경
