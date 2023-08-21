@@ -5,6 +5,15 @@ FROM httpd:alpine
 ENV ENV=/etc/profile
 ADD config/alias.sh /etc/profile.d/alias.sh
 
+# 타임존 설정
+ENV TZ=Asia/Seoul
+RUN apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone
+
+ADD config/alias.sh /etc/profile.d/alias.sh
+RUN apk add --no-cache bash
+
 #RUN apk update
 #RUN apk upgrade
 #RUN set -x \
