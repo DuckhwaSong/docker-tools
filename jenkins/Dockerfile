@@ -4,6 +4,7 @@ MAINTAINER gabiacns
 
 ENV JENKINS_OPTS='--httpPort=80'
 #ENV JENKINS_OPTS='--httpPort=9999 --prefix=/jenkins'
+ENV JENKINS_JAVA_OPTIONS='-Dorg.apache.commons.jelly.tags.fmt.timeZone=Asia/Seoul'
 
 USER root
 
@@ -11,6 +12,9 @@ RUN alias ll='ls -alF'
 RUN apt-get upgrade && apt-get update
 RUN apt-get install -y rsync
 #RUN apt-get install -y docker containerd
+
+# 시간변경
+RUN ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 # jenkins root 권한
 RUN sed -i 's/jenkins:x:1000:1000::/jenkins:x:0:0::/' /etc/passwd
