@@ -1,0 +1,74 @@
+FROM alpine:latest
+
+#set $ENV
+ENV ENV=/etc/profile
+ADD config/alias.sh /etc/profile.d/alias.sh
+
+EXPOSE 80/tcp
+EXPOSE 443/tcp
+
+RUN apk update
+RUN apk upgrade
+
+RUN apk add --update --no-cache libgd libpng-dev libjpeg-turbo-dev freetype-dev
+
+# 시간대변경 - 아시아/서울
+#RUN ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
+RUN apk --no-cache add tzdata && \
+	cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
+	echo "Asia/Seoul" > /etc/timezone \
+	apk del tzdata
+
+RUN apk add openrc openssl curl git unzip lynx libmcrypt
+RUN apk add apache2 apache-mod-fcgid apache2-proxy apache2-proxy-html apache2-ssl
+RUN cp /usr/lib/libxml2.so.2 /usr/lib/libxml2.so
+
+RUN apk add php83 
+RUN apk add php83-mysqli php83-opcache php83-gd
+RUN apk add php83-xml php83-zip php83-soap php83-redis
+RUN apk add php83-pecl-imagick php83-mbstring php83-pdo_mysql
+
+RUN apk add php83-fpm
+RUN ln -s /usr/bin/php83 /usr/bin/php
+RUN ln -s /usr/sbin/php-fpm83 /usr/sbin/php-fpm
+RUN adduser -H -D -S -G www-data -s /sbin/nologin www-data
+
+# Composer install
+#RUN curl -sS https://getcomposer.org/installer | /usr/bin/php
+#RUN mv composer.phar /usr/local/bin/composer
+
+# 설정파일 카피
+#ADD config/php/php.ini /etc/php7/php.ini
+#ADD config/php/php.ini /usr/local/etc/php/
+ADD config/conf.d/* /etc/apache2/conf.d/
+ADD config/httpd.conf /etc/apache2/
+#ADD config/.bashrc /root/
+#ADD extensions/*.so /usr/lib/php7/modules/
+#ADD config/ssl/ /etc/ssl/
+#ADD config/cronjob /etc/cron.d/cronjob
+#ADD cron/ /www/src/
+RUN mkdir -p /www/html
+RUN mkdir -p /run/apache2
+
+#RUN mv /etc/apache2/httpd.conf /etc/apache2/httpd.conf.backup
+#ADD config/httpd.conf /etc/apache2/httpd.conf
+
+# set localhost server name
+#RUN sed -i "s|#ServerName .*:80|ServerName apache|g" /etc/apache2/httpd.conf
+
+#RUN /usr/sbin/httpd -k start
+#/etc/systemd/system
+#CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
+
+RUN apk add util-linux openrc
+VOLUME /sys/fs/cgroup                 # As suggested above
+RUN rc-update add php-fpm83 default\
+	&& mkdir /run/openrc\
+	&& touch /run/openrc/softlevel      # Workaround for the Error Message
+COPY config/entrypoint.sh /usr/local/bin/
+RUN chmod u+x,g+x /usr/local/bin/entrypoint.sh\
+	&& ln -s /usr/local/bin/entrypoint.sh / # backwards compat
+#ADD html/ /var/www/html/
+#WORKDIR /var/www/html/
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["httpd", "-DNO_DETACH", "-DFOREGROUND", "-e", "info"]

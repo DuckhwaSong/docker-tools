@@ -1,0 +1,58 @@
+# don't use alpine:edge as it is not refreshed that often
+FROM php:fpm-alpine
+#docker pull php:fpm-alpine
+
+#set $ENV
+ENV ENV=/etc/profile
+ADD config/alias.sh /etc/profile.d/alias.sh
+
+EXPOSE 80/tcp
+EXPOSE 443/tcp
+
+RUN apk update
+RUN apk upgrade
+
+RUN apk add --update --no-cache libgd libpng-dev libjpeg-turbo-dev freetype-dev
+
+RUN apk add openrc openssl curl git unzip lynx libmcrypt
+RUN apk add apache2 apache-mod-fcgid apache2-proxy apache2-proxy-html apache2-ssl
+RUN cp /usr/lib/libxml2.so.2 /usr/lib/libxml2.so
+
+RUN docker-php-ext-install -j$(nproc) mysqli opcache gd
+#RUN docker-php-ext-install -j$(nproc) mbstring zip
+RUN apk add php83-xml php83-zip php83-soap php83-redis
+RUN apk add php83-pecl-imagick php83-mbstring php83-pdo_mysql
+
+# Composer install
+RUN curl -sS https://getcomposer.org/installer | php
+RUN mv composer.phar /usr/local/bin/composer
+
+# 설정파일 카피
+#ADD config/php/php.ini /etc/php7/php.ini
+#ADD config/php/php.ini /usr/local/etc/php/
+ADD config/conf.d/* /etc/apache2/conf.d/
+ADD config/httpd.conf /etc/apache2/
+#ADD config/.bashrc /root/
+#ADD extensions/*.so /usr/lib/php7/modules/
+#ADD config/ssl/ /etc/ssl/
+#ADD config/cronjob /etc/cron.d/cronjob
+#ADD cron/ /www/src/
+RUN mkdir -p /www/html
+RUN mkdir -p /run/apache2
+
+# 시간대변경 - 아시아/서울
+#RUN ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
+RUN apk --no-cache add tzdata && \
+	cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
+	echo "Asia/Seoul" > /etc/timezone \
+	apk del tzdata
+
+#RUN mv /etc/apache2/httpd.conf /etc/apache2/httpd.conf.backup
+#ADD config/httpd.conf /etc/apache2/httpd.conf
+
+# set localhost server name
+RUN sed -i "s|#ServerName .*:80|ServerName apache|g" /etc/apache2/httpd.conf
+
+#RUN /usr/sbin/httpd -k start
+#/etc/systemd/system
+#CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
