@@ -37,6 +37,19 @@ RUN adduser -H -D -S -G www-data -s /sbin/nologin www-data
 #RUN curl -sS https://getcomposer.org/installer | /usr/bin/php
 #RUN mv composer.phar /usr/local/bin/composer
 
+# php 확장모듈 설치
+#RUN apk add php83-dev gcc g++ automake	#php 확장모듈 설치를 위한 모듈
+# php-mod_screwim 설치
+RUN mkdir -p /usr/local/src/ && cd /usr/local/src/ && git clone https://github.com/OOPS-ORG-PHP/mod_screwim.git && cd mod_screwim
+RUN php-config83
+RUN ./configure --with-php-config=/usr/bin/php-config83 && make install
+RUN echo "screwim.enable = 1" >> /etc/php83/conf.d/91-screwim.ini && echo "extension=screwim.so" >> /etc/php83/conf.d/91-screwim.ini
+RUN cd tools && ./autogen.sh && ./configure && make install && which screwim
+
+# php-mod_screwim 설치
+RUN mkdir -p /usr/local/src/ && cd /usr/local/src/ && git clone https://github.com/runkit7/runkit7.git && cd runkit7
+RUN php-config83
+
 # 설정파일 카피
 #ADD config/php/php.ini /etc/php7/php.ini
 #ADD config/php/php.ini /usr/local/etc/php/
