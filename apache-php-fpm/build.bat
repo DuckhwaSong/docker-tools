@@ -16,8 +16,9 @@ docker stop "%projectDir%" && docker rm "%projectDir%"
 docker build . -t img-%projectDir%
 
 :: 3. 도커 컨테이너 런
-docker run -it -d -p %port%:80 -v "%CD%\html:/www/html" --name "%projectDir%" img-%projectDir%
+::docker run -it -d -p %port%:80 -v "%CD%\html:/www/html" --name "%projectDir%" img-%projectDir%
 :: docker run -it -d -p %port%:80 --name "%projectDir%" img-%projectDir%
+docker run -it -d -v "%CD%\html:/www/html" --name "%projectDir%" img-%projectDir%
 
 :: 4. 도커 컨테이너 아파치 + mysql 실행 
 :: docker exec -itd "%projectDir%" "/usr/sbin/httpd"

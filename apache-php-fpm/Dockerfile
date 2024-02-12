@@ -38,40 +38,25 @@ RUN adduser -H -D -S -G www-data -s /sbin/nologin www-data
 #RUN mv composer.phar /usr/local/bin/composer
 
 # php 확장모듈 설치
-#RUN apk add php83-dev gcc g++ automake	#php 확장모듈 설치를 위한 모듈
-# php-mod_screwim 설치
-RUN mkdir -p /usr/local/src/ && cd /usr/local/src/ && git clone https://github.com/OOPS-ORG-PHP/mod_screwim.git && cd mod_screwim
-RUN php-config83
-RUN ./configure --with-php-config=/usr/bin/php-config83 && make install
-RUN echo "screwim.enable = 1" >> /etc/php83/conf.d/91-screwim.ini && echo "extension=screwim.so" >> /etc/php83/conf.d/91-screwim.ini
-RUN cd tools && ./autogen.sh && ./configure && make install && which screwim
+RUN apk add php83-dev gcc g++ automake make
 
 # php-mod_screwim 설치
-RUN mkdir -p /usr/local/src/ && cd /usr/local/src/ && git clone https://github.com/runkit7/runkit7.git && cd runkit7
-RUN php-config83
+#RUN mkdir -p /usr/local/src/ && cd /usr/local/src/ && git clone https://github.com/OOPS-ORG-PHP/mod_screwim.git && cd mod_screwim
+#RUN phpize83
+#RUN ./configure --with-php-config=/usr/bin/php-config83 && make install && ls -alF /usr/lib/php*/modules
+#RUN echo "screwim.enable = 1" >> /etc/php83/conf.d/91-screwim.ini && echo "extension=screwim.so" >> /etc/php83/conf.d/91-screwim.ini
+#RUN cd tools && ./autogen.sh && ./configure && make install && which screwim
+
+# php-runkit7 설치
+#RUN mkdir -p /usr/local/src/ && cd /usr/local/src/ && git clone https://github.com/runkit7/runkit7.git && cd runkit7
+#RUN phpize83
+#RUN ./configure --with-php-config=/usr/bin/php-config83 && make && make install && ls -alF /usr/lib/php*/modules
 
 # 설정파일 카피
-#ADD config/php/php.ini /etc/php7/php.ini
-#ADD config/php/php.ini /usr/local/etc/php/
 ADD config/conf.d/* /etc/apache2/conf.d/
 ADD config/httpd.conf /etc/apache2/
-#ADD config/.bashrc /root/
-#ADD extensions/*.so /usr/lib/php7/modules/
-#ADD config/ssl/ /etc/ssl/
-#ADD config/cronjob /etc/cron.d/cronjob
-#ADD cron/ /www/src/
 RUN mkdir -p /www/html
 RUN mkdir -p /run/apache2
-
-#RUN mv /etc/apache2/httpd.conf /etc/apache2/httpd.conf.backup
-#ADD config/httpd.conf /etc/apache2/httpd.conf
-
-# set localhost server name
-#RUN sed -i "s|#ServerName .*:80|ServerName apache|g" /etc/apache2/httpd.conf
-
-#RUN /usr/sbin/httpd -k start
-#/etc/systemd/system
-#CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
 
 RUN apk add util-linux openrc
 VOLUME /sys/fs/cgroup                 # As suggested above
@@ -81,7 +66,5 @@ RUN rc-update add php-fpm83 default\
 COPY config/entrypoint.sh /usr/local/bin/
 RUN chmod u+x,g+x /usr/local/bin/entrypoint.sh\
 	&& ln -s /usr/local/bin/entrypoint.sh / # backwards compat
-#ADD html/ /var/www/html/
-#WORKDIR /var/www/html/
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["httpd", "-DNO_DETACH", "-DFOREGROUND", "-e", "info"]
