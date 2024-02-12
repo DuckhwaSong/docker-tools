@@ -1,9 +1,9 @@
 version: '3'
  
 services:
-  db:
-    image: mariadb:10.4
-    container_name: db
+  mydb:
+    image: mysql:latest
+    container_name: mysql-db
     environment:
       MYSQL_ROOT_PASSWORD: my_secret_password
       MYSQL_DATABASE: app_db
@@ -11,20 +11,20 @@ services:
       MYSQL_PASSWORD: db_user_pass
     restart: always
     ports:
-      - "3306:3306"
+      - "3366:3306"
     volumes:
       - dbdata:/var/lib/mysql
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: pma
+    image: phpmyadmin:latest
+    container_name: myadmin
     links:
-      - db
+      - mydb
     environment:
-      PMA_HOST: db
+      PMA_HOST: mysql-db
       PMA_PORT: 3306
       PMA_ARBITRARY: 1
     restart: always
     ports:
-      - 3308:80
+      - 3380:80
 volumes:
   dbdata:
