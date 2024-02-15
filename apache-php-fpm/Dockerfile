@@ -41,16 +41,25 @@ RUN adduser -H -D -S -G www-data -s /sbin/nologin www-data
 RUN apk add php83-dev gcc g++ automake make
 
 # php-mod_screwim 설치
-#RUN mkdir -p /usr/local/src/ && cd /usr/local/src/ && git clone https://github.com/OOPS-ORG-PHP/mod_screwim.git && cd mod_screwim
+#RUN mkdir -p /usr/local/src/ && cd /usr/local/src/ && git clone https://github.com/OOPS-ORG-PHP/mod_screwim.git
+#WORKDIR /usr/local/src/mod_screwim
 #RUN phpize83
-#RUN ./configure --with-php-config=/usr/bin/php-config83 && make install && ls -alF /usr/lib/php*/modules
+#RUN ./configure --with-php-config=/usr/bin/php-config83 && make install
 #RUN echo "screwim.enable = 1" >> /etc/php83/conf.d/91-screwim.ini && echo "extension=screwim.so" >> /etc/php83/conf.d/91-screwim.ini
-#RUN cd tools && ./autogen.sh && ./configure && make install && which screwim
+#RUN cd tools && ./autogen.sh && ./configure && make install 
+# which screwim
 
 # php-runkit7 설치
-#RUN mkdir -p /usr/local/src/ && cd /usr/local/src/ && git clone https://github.com/runkit7/runkit7.git && cd runkit7
+#RUN mkdir -p /usr/local/src/ && cd /usr/local/src/ && git clone https://github.com/runkit7/runkit7.git
+#WORKDIR /usr/local/src/runkit7
 #RUN phpize83
-#RUN ./configure --with-php-config=/usr/bin/php-config83 && make && make install && ls -alF /usr/lib/php*/modules
+#RUN ./configure --with-php-config=/usr/bin/php-config83 && make && make install
+#RUN echo "extension=runkit7.so" >> /etc/php83/conf.d/92-runkit7.ini
+# ls -alF /usr/lib/php*/modules
+
+# php 확장모듈 설치 php-mod_screwim / php-runkit7
+ADD config/php.modules/* /usr/lib/php83/modules/
+ADD config/php.conf/* /etc/php83/conf.d/
 
 # 설정파일 카피
 ADD config/conf.d/* /etc/apache2/conf.d/
