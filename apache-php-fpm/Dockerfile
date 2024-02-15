@@ -38,7 +38,7 @@ RUN adduser -H -D -S -G www-data -s /sbin/nologin www-data
 #RUN mv composer.phar /usr/local/bin/composer
 
 # php 확장모듈 설치
-RUN apk add php83-dev gcc g++ automake make
+#RUN apk add php83-dev gcc g++ automake make
 
 # php-mod_screwim 설치
 #RUN mkdir -p /usr/local/src/ && cd /usr/local/src/ && git clone https://github.com/OOPS-ORG-PHP/mod_screwim.git
@@ -77,3 +77,6 @@ RUN chmod u+x,g+x /usr/local/bin/entrypoint.sh\
 	&& ln -s /usr/local/bin/entrypoint.sh / # backwards compat
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["httpd", "-DNO_DETACH", "-DFOREGROUND", "-e", "info"]
+
+# delete apk cache
+RUN rm -rf /var/cache/apk/*
