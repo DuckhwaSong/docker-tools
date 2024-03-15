@@ -24,14 +24,14 @@ RUN apk add openrc openssl curl git unzip lynx libmcrypt
 RUN apk add apache2 apache-mod-fcgid apache2-proxy apache2-proxy-html apache2-ssl
 RUN cp /usr/lib/libxml2.so.2 /usr/lib/libxml2.so
 
-RUN apk add php83 
-RUN apk add php83-mysqli php83-opcache php83-gd
-RUN apk add php83-xml php83-zip php83-soap php83-redis
-RUN apk add php83-pecl-imagick php83-mbstring php83-pdo_mysql php83-pecl-yaml
+RUN apk add php81 
+RUN apk add php81-mysqli php81-opcache php81-gd
+RUN apk add php81-xml php81-zip php81-soap php81-redis
+RUN apk add php81-pecl-imagick php81-mbstring php81-pdo_mysql # php81-pecl-yaml
 
-RUN apk add php83-fpm
-RUN ln -s /usr/bin/php83 /usr/bin/php
-RUN ln -s /usr/sbin/php-fpm83 /usr/sbin/php-fpm
+RUN apk add php81-fpm
+#RUN ln -s /usr/bin/php81 /usr/bin/php
+RUN ln -s /usr/sbin/php-fpm81 /usr/sbin/php-fpm
 RUN adduser -H -D -S -G www-data -s /sbin/nologin www-data
 
 # Composer install
@@ -39,14 +39,14 @@ RUN adduser -H -D -S -G www-data -s /sbin/nologin www-data
 #RUN mv composer.phar /usr/local/bin/composer
 
 # php 확장모듈 설치
-#RUN apk add php83-dev gcc g++ automake make
+#RUN apk add php81-dev gcc g++ automake make
 
 # php-mod_screwim 설치
 #RUN mkdir -p /usr/local/src/ && cd /usr/local/src/ && git clone https://github.com/OOPS-ORG-PHP/mod_screwim.git
 #WORKDIR /usr/local/src/mod_screwim
 #RUN phpize83
 #RUN ./configure --with-php-config=/usr/bin/php-config83 && make install
-#RUN echo "screwim.enable = 1" >> /etc/php83/conf.d/91-screwim.ini && echo "extension=screwim.so" >> /etc/php83/conf.d/91-screwim.ini
+#RUN echo "screwim.enable = 1" >> /etc/php81/conf.d/91-screwim.ini && echo "extension=screwim.so" >> /etc/php81/conf.d/91-screwim.ini
 #RUN cd tools && ./autogen.sh && ./configure && make install 
 # which screwim
 
@@ -55,12 +55,12 @@ RUN adduser -H -D -S -G www-data -s /sbin/nologin www-data
 #WORKDIR /usr/local/src/runkit7
 #RUN phpize83
 #RUN ./configure --with-php-config=/usr/bin/php-config83 && make && make install
-#RUN echo "extension=runkit7.so" >> /etc/php83/conf.d/92-runkit7.ini
+#RUN echo "extension=runkit7.so" >> /etc/php81/conf.d/92-runkit7.ini
 # ls -alF /usr/lib/php*/modules
 
 # php 확장모듈 설치 php-mod_screwim / php-runkit7
-ADD config/php.modules/* /usr/lib/php83/modules/
-ADD config/php.conf/* /etc/php83/conf.d/
+ADD config/php.modules/* /usr/lib/php81/modules/
+ADD config/php.conf/* /etc/php81/conf.d/
 
 # 설정파일 카피
 ADD config/conf.d/* /etc/apache2/conf.d/
@@ -70,13 +70,14 @@ RUN mkdir -p /run/apache2
 
 RUN apk add util-linux openrc
 #VOLUME /sys/fs/cgroup                 # As suggested above
-RUN rc-update add php-fpm83 default\
+RUN rc-update add php-fpm81 default\
 	&& mkdir /run/openrc\
 	&& touch /run/openrc/softlevel      # Workaround for the Error Message
 COPY config/entrypoint.sh /usr/local/bin/
 RUN chmod u+x,g+x /usr/local/bin/entrypoint.sh\
 	&& ln -s /usr/local/bin/entrypoint.sh / # backwards compat
 #ENTRYPOINT ["entrypoint.sh"]
+CMD ["entrypoint.sh"]
 CMD ["httpd", "-DNO_DETACH", "-DFOREGROUND", "-e", "info"]
 
 # delete apk cache
