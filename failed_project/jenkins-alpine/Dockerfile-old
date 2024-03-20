@@ -1,0 +1,10 @@
+FROM alpine:latest
+
+MAINTAINER gabiacns
+
+ADD config/alias.sh /etc/profile.d/alias.sh
+
+#USER root
+#RUN apt-get update
+#RUN apt install python3-pip -y
+#RUN pip3 install awscli — upgrade
