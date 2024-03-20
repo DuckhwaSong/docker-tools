@@ -57,6 +57,9 @@ RUN adduser -H -D -S -G www-data -s /sbin/nologin www-data
 #RUN echo "extension=runkit7.so" >> /etc/php83/conf.d/92-runkit7.ini
 # ls -alF /usr/lib/php*/modules
 
+# cron + certbot
+RUN apk add dcron certbot
+
 # php 확장모듈 설치 php-mod_screwim / php-runkit7
 ADD config/php.modules/* /usr/lib/php83/modules/
 ADD config/php.conf/* /etc/php83/conf.d/
