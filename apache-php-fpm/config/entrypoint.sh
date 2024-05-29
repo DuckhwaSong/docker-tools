@@ -8,6 +8,9 @@ rc-status -a
 #echo "Service 'RSyslog': Starting ..."
 #rc-service rsyslog start
 
+echo "Service 'dcron': Starting ..."
+rc-service dcron restart
+
 echo "Service 'php-fpm83': Starting ..."
 rc-service php-fpm83 restart
 

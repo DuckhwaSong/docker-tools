@@ -1,5 +1,4 @@
-#FROM alpine:latest
-FROM alpine:3.19
+FROM alpine:latest
 
 #set $ENV
 ENV ENV=/etc/profile
@@ -27,7 +26,7 @@ RUN cp /usr/lib/libxml2.so.2 /usr/lib/libxml2.so
 RUN apk add php83 
 RUN apk add php83-mysqli php83-opcache php83-gd
 RUN apk add php83-xml php83-zip php83-soap php83-redis
-RUN apk add php83-pecl-imagick php83-mbstring php83-pdo_mysql php83-pecl-yaml
+RUN apk add php83-pecl-imagick php83-mbstring php83-pdo_mysql
 
 RUN apk add php83-fpm
 RUN ln -s /usr/bin/php83 /usr/bin/php
@@ -72,7 +71,7 @@ RUN mkdir -p /www/html
 RUN mkdir -p /run/apache2
 
 RUN apk add util-linux openrc
-#VOLUME /sys/fs/cgroup                 # As suggested above
+VOLUME /sys/fs/cgroup                 # As suggested above
 RUN rc-update add php-fpm83 default\
 	&& mkdir /run/openrc\
 	&& touch /run/openrc/softlevel      # Workaround for the Error Message
