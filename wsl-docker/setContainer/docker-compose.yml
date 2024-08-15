@@ -1,0 +1,66 @@
+#version: '3'
+ 
+services:
+  web:
+    image: php:8.2-apache
+    restart: always
+    volumes:
+#      - ./html:/var/www/html
+      - ./www:/www
+    environment:
+      DB_HOST: mydb
+      DB_PORT: 3306
+      DB_NAME: fm00
+      DB_USER: fm00
+      DB_PASS: fm00_pass
+    ports:
+      - ${_LOCAL_PORT0_}:80
+      - ${_LOCAL_PORT1_}:81
+      - ${_LOCAL_PORT2_}:82
+      - ${_LOCAL_PORT3_}:83
+      - ${_LOCAL_PORT4_}:84
+    networks:
+      default_bridge:
+        ipv4_address: 172.80.0.2
+  mydb:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: fm00
+      MYSQL_USER: fm00
+      MYSQL_PASSWORD: fm00_pass
+      TZ : Asia/Seoul
+    restart: always
+    ports:
+      - 3366:3306
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --sql_mode=ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      default_bridge:
+        ipv4_address: 172.80.0.3
+  phpmyadmin:
+    image: phpmyadmin:latest
+    environment:
+      PMA_HOST: mydb
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      MEMORY_LIMIT: 512M
+      UPLOAD_LIMIT: 256M
+    restart: always
+    ports:
+      - 3380:80
+    networks:
+      default_bridge:
+        ipv4_address: 172.80.0.4
+volumes:
+  dbdata:
+networks:
+  default_bridge:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.80.0.0/16
