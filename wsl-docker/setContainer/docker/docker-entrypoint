@@ -1,0 +1,6 @@
+#!/bin/bash
+
+export USE_ZEND_ALLOC=0
+
+# Start supervisord and services
+exec /usr/bin/supervisord  -n

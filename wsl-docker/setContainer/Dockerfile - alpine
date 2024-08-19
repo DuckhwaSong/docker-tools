@@ -1,0 +1,130 @@
+FROM alpine:3.19
+
+#set $ENV
+ENV ENV=/etc/profile
+ADD docker/alias.sh /etc/profile.d/alias.sh
+
+EXPOSE 80/tcp
+EXPOSE 443/tcp
+
+RUN apk update
+RUN apk upgrade
+
+RUN apk add --update --no-cache libgd libpng-dev libjpeg-turbo-dev freetype-dev
+# 시간대변경 - 아시아/서울
+#RUN ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
+RUN apk --no-cache add tzdata && \
+	cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
+	echo "Asia/Seoul" > /etc/timezone \
+	apk del tzdata
+
+RUN apk add openrc openssl curl git unzip lynx libmcrypt
+RUN apk add apache2 apache-mod-fcgid apache2-proxy apache2-proxy-html apache2-ssl
+RUN cp /usr/lib/libxml2.so.2 /usr/lib/libxml2.so
+
+RUN apk add php82 
+RUN apk add php82-mysqli php82-opcache php82-gd
+RUN apk add php82-xml php82-zip php82-soap 
+RUN apk add php82-pecl-imagick php82-mbstring php82-pdo_mysql 
+
+RUN apk add php82-fpm
+#RUN ln -s /usr/bin/php82 /usr/bin/php
+RUN ln -s /usr/sbin/php-fpm82 /usr/sbin/php-fpm
+RUN adduser -H -D -S -G www-data -s /sbin/nologin www-data
+
+
+# 기타모듈 - 필요여부에 따라 설정
+RUN apk add php82-curl php82-dom php82-iconv php82-pecl-mcrypt php82-ctype php82-simplexml php82-fileinfo php82-ftp php82-session
+RUN apk add php82-xmlreader php82-xmlwriter
+#RUN apk add php82-fileinfo php82-tokenizer php82-exif php82-posix php82-phar php82-sqlite3 php82-pdo_sqlite # 7.0에 설치되었지만 불필요할듯
+#RUN apk add php82-redis php82-gettext php82-intl php82-calendar php82-bcmath php82-bz2 php82-xsl # 혹시 필요하면 설치1
+#RUN apk add php82-shmop php82-sysvmsg php82-sysvsem php82-sysvshm php82-tokenizer php82-pecl-yaml # 혹시 필요하면 설치2
+#RUN apk add php82-pecl-xdebug # 개발 debug를 위한 - 일반적으로 불필요!
+
+# php-iconv euc-kr 문제 해결
+RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.13/community/ gnu-libiconv=1.15-r3
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
+
+
+# apache conf
+RUN sed -i "s/^#LoadModule rewrite_module/LoadModule rewrite_module/" /etc/apache2/httpd.conf 
+RUN sed -i "s/^#ServerName/ServerName/" /etc/apache2/httpd.conf 
+#COPY docker/apache/conf /etc/apache2/conf
+COPY docker/apache/conf.d /etc/apache2/conf.d
+COPY docker/apache/modsecurity.d /etc/apache2/modsecurity.d
+COPY docker/apache/modules/mod_security3.so /usr/lib/apache2/mod_security3.so
+RUN set -eux; \
+#    mkdir -p /www; \
+    rm -f /etc/apache2/conf.d/ssl.conf
+#RUN ln -s /var/www/html /www/html
+#RUN ln -s /var/www /www
+RUN mkdir -p /run/apache2 /www/logs
+#RUN git clone https://github.com/phpmyadmin/phpmyadmin.git /www/myadmin
+#https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
+
+############################## 컴파일 후 모듈이 필요한 절차 (*modsecurity는 so파일만으로 해결이 안됨-최소컴파일)  ##############################
+# modsecurity-v3 설치 : 최초 컴파일해서 so 파일만 넣어놓음(컴파일을 위한 패키지 용량이 크고 자원 소모됨)
+#RUN apk add autoconf gcc g++ automake make libxml2-dev apache2-dev libtool pcre pcre-dev linux-headers
+#RUN apk add build-base
+#RUN cd /root && wget https://github.com/SpiderLabs/ModSecurity/releases/download/v3.0.4/modsecurity-v3.0.4.tar.gz
+#RUN cd /root && tar xzf modsecurity-v3.0.4.tar.gz && rm -rf modsecurity-v3.0.4.tar.gz
+#RUN cd /root/modsecurity-v3.0.4 && ./build.sh && ./configure && make && make install
+#RUN rm -rf /root/modsecurity-v3.0.4
+# cd /root && git clone https://github.com/SpiderLabs/ModSecurity-apache
+# cd /root/ModSecurity-apache && ./autogen.sh && ./configure --with-libmodsecurity=/usr/local/modsecurity/ && make && make install
+# echo "LoadModule security3_module /usr/lib/apache2/mod_security3.so" >> /etc/apache2/apache2.conf
+# service apache2 restart
+# httpd -D DUMP_MODULES | grep security3
+# export LD_LIBRARY_PATH=/usr/lib
+#RUN apk del autoconf gcc g++ automake make libxml2-dev apache2-dev libtool pcre-dev linux-headers
+
+# php82-xmlrpc 없음 : 최초 컴파일해서 so 파일만 넣어놓음(컴파일을 위한 패키지 용량이 크고 자원 소모됨)
+# apk add php82-dev gcc g++ automake make libxml2-dev
+# git clone https://github.com/php/pecl-networking-xmlrpc
+# cd pecl-networking-xmlrpc
+# phpize
+# ./configure --with-php-config=/usr/bin/php-config82
+# make && make test && make install
+############################## 컴파일 후 모듈이 필요한 절차 ##############################
+# libxml2
+
+# mysql(mariadb) 설치
+#RUN apk add mysql mysql-client
+#RUN mysql_install_db --user=mysql --datadir=/var/lib/mysql
+#RUN rc-update add mariadb default
+#RUN service mariadb restart
+#RUN sed -i 's|skip-networking|#skip-networking|g' /etc/my.cnf.d/mariadb-server.cnf
+
+# php-fpm conf
+RUN ln -s /etc/php82 /etc/php
+RUN ln -s /usr/lib/php82 /usr/lib/php
+COPY docker/php/php.ini /etc/php/
+COPY docker/php/php-fpm.conf /etc/php/
+COPY docker/php/php-fpm.d /etc/php/php-fpm.d
+COPY docker/php/extensions/* /usr/lib/php/modules/
+#RUN echo "extension=CPClient.so" >> /etc/php/conf.d/99_etc.ini
+#RUN echo "extension=IPINClient.so" >> /etc/php/conf.d/99_etc.ini
+RUN echo "extension=runkit7.so" >> /etc/php/conf.d/99_etc.ini
+RUN echo "extension=xmlrpc.so" >> /etc/php/conf.d/99_etc.ini
+RUN echo "extension=php_screw_plus.so" >> /etc/php/conf.d/99_etc.ini
+RUN set -eux; \
+    mkdir -p /run/php-fpm
+
+# 메일 발송을 위한 postfix 설치
+RUN apk add postfix
+
+# servie 관리 패키지 설치
+RUN apk add util-linux openrc
+#VOLUME /sys/fs/cgroup                 # As suggested above
+RUN rc-update add php-fpm82 default\
+	&& mkdir /run/openrc\
+	&& touch /run/openrc/softlevel      # Workaround for the Error Message
+COPY docker/entrypoint.sh /usr/local/bin/
+RUN chmod u+x,g+x /usr/local/bin/entrypoint.sh\
+	&& ln -s /usr/local/bin/entrypoint.sh / # backwards compat
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["httpd", "-DNO_DETACH", "-DFOREGROUND", "-e", "info"]
+
+# delete apk cache
+RUN apk cache clean
+RUN rm -rf /var/cache/apk/*

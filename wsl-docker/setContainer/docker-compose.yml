@@ -2,7 +2,9 @@
  
 services:
   web:
-    image: php:8.2-apache
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: always
     volumes:
 #      - ./html:/var/www/html
@@ -56,6 +58,22 @@ services:
     networks:
       default_bridge:
         ipv4_address: 172.80.0.4
+  php7:
+    build:
+      context: .
+      dockerfile: Dockerfile-php7
+    restart: always
+    volumes:
+      - ./www:/www
+    ports:
+      - 8885:85
+      - 8886:86
+      - 8887:87
+      - 8888:88
+      - 8889:89
+    networks:
+      default_bridge:
+        ipv4_address: 172.80.0.7
 volumes:
   dbdata:
 networks:
