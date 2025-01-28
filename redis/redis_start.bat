@@ -1,9 +1,14 @@
-:: µµÄ¿°¡ ¼³Ä¡µÇ¾î ÀÖ¾î¾ßÇÕ´Ï´Ù.
+:: ï¿½ï¿½Ä¿ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½Ç¾ï¿½ ï¿½Ö¾ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
 
-:: 0. µµÄ¿ ÄÁÅ×ÀÌ³Ê redis-net ³×Æ®¿öÅ©¼³Á¤
+:: 0. ï¿½ï¿½Ä¿ ï¿½ï¿½ï¿½ï¿½ï¿½Ì³ï¿½ redis-net ï¿½ï¿½Æ®ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½
 :: docker network create redis-net
 
 
-:: 1. µµÄ¿ ÄÁÅ×ÀÌ³Ê ÀÚµ¿»ý¼º
+:: 1. ï¿½ï¿½Ä¿ ï¿½ï¿½ï¿½ï¿½ï¿½Ì³ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½
 :: docker run --name my_redis -p 6379:6379 --network redis-net -v data:/data -d redis:alpine redis-server --appendonly yes /usr/local/etc/redis/redis.conf
 docker run --name my_redis -p 6379:6379 -v conf:/etc/redis -v data:/data -d redis:alpine redis-server --appendonly yes 
+
+
+:: docker run --name my_redis -p 6379:6379 -d redis redis-server --appendonly yes
+:: docker exec -it my_redis /bin/bash
+:: docker run --name redis_insight -p 8001:8001 -itd redislabs/redisinsight:latest
