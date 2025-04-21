@@ -1,0 +1,44 @@
+FROM httpd:alpine
+
+
+ENV ENV=/etc/profile
+ADD config/alias.sh /etc/profile.d/alias.sh
+
+# 타임존 설정
+ENV TZ=Asia/Seoul
+RUN apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone
+
+ADD config/alias.sh /etc/profile.d/alias.sh
+RUN apk add --no-cache bash php
+
+#RUN mv /usr/local/apache2/conf/httpd.conf /usr/local/apache2/conf/httpd.conf.backup
+#ADD config/httpd.conf /usr/local/apache2/conf/
+
+#RUN /usr/local/apache2/bin/apachectl restart
+
+# /usr/local/apache2/conf/extra/httpd-dav.conf
+# 
+
+
+Alias /phparea /home/gstein/php_files
+Alias /php-source /home/gstein/php_files
+<Location /php-source>
+DAV On
+ForceType text/plain
+</Location>
+
+
+
+<Location /foo>
+Dav On
+
+AuthType Basic
+AuthName DAV
+AuthUserFile user.passwd
+
+<LimitExcept GET OPTIONS>
+require user admin
+</LimitExcept>
+</Location>
